@@ -27,7 +27,7 @@ void messagesDates() {
     while(true) {
         std::cout << "Enter your message: \n";
         std::getline(std::cin, message);
-        if(message == "0") { //sigint?
+        if(message == "0") {
             break;
         }
         time(&timestamp);
@@ -49,14 +49,20 @@ void messagesDates() {
 }
 
 void wordCounter() {
+    ordered_json j;
     std::ifstream inputFile("wordCounter.json");
-    if(!inputFile) { // is empty
+    std::ofstream outFile;
+    std::string message;
+
+    if(!inputFile) {
         std::cout << "file not opened\n";
         return;
     }
-    ordered_json j = ordered_json::parse(inputFile);
-    std::ofstream outFile;
-    std::string message;
+    if(inputFile.peek() != std::ifstream::traits_type::eof()) {
+        j = ordered_json::parse(inputFile); //parses if not empty
+        std::cout << j.dump(4) << "\n";
+    }
+
     while(true) {
         std::cout << "Enter your message: \n";
         std::getline(std::cin, message);
@@ -76,11 +82,6 @@ void wordCounter() {
 void shopper() {
     ordered_json j;
     FILE* inputFile = fopen("shopping.json", "r");
-    if (inputFile == NULL) { //no need right?
-        std::cerr << "Error opening file!\n";
-        delete inputFile;
-        return;
-    }
     j = ordered_json::parse(inputFile);
     std::cout << j.dump(4) << "\n";
 }
