@@ -79,15 +79,49 @@ void wordCounter() {
     }
 }
 
-void shopper() {
-    ordered_json j;
-    FILE* inputFile = fopen("shopping.json", "r");
-    j = ordered_json::parse(inputFile);
-    std::cout << j.dump(4) << "\n";
-}
+// Пользователь может добавлять товар, указывать количество товара, удалять или изменять запись.
+class Shopper {
+    public:
+
+    void addItem() {
+
+    }
+    void changeItemCount() {
+
+    }
+    void removeItem() {
+
+    }
+    void editItem() {
+
+    }
+    void run() {
+        while(true) {
+        std::cout << "choose an action(add/change/remove/edit)\n";
+        std::getline(std::cin, choice);
+            switch(ADD)
+            {
+                case(ADD):
+                    void addItem();
+                    break;
+                case(CHANGE):
+                    void changeItemCount();
+                    break;
+                default:
+                    return;
+            }
+        }
+    }
+    
+    private:
+    ordered_json j = ordered_json::parse(inputFile); // not error prone right?
+    std::string filename = "wordCounter.json"; // looks ok...
+    std::ifstream inputFile(std::string filename); // ...?
+    std::string choice;
+    enum choices {ADD, CHANGE, REMOVE, EDIT};
+};
 
 int main() {
     // messagesDates();
-    wordCounter();
-    // shopper();
+    // wordCounter();
 }
