@@ -6,6 +6,7 @@
 #include <ctime>
 #include <iomanip>
 #include <stdio.h>
+#include <unordered_map>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -82,46 +83,63 @@ void wordCounter() {
 // Пользователь может добавлять товар, указывать количество товара, удалять или изменять запись.
 class Shopper {
     public:
-
     void addItem() {
-
+        std::cout << "addItem\n";
     }
     void changeItemCount() {
-
+        std::cout << "changeItem\n";
     }
     void removeItem() {
-
+        std::cout << "removeItem\n";
     }
     void editItem() {
-
+        std::cout << "editItem\n";
     }
     void run() {
+        // inputFile.open(filename);
+        // j = ordered_json::parse(inputFile);
         while(true) {
-        std::cout << "choose an action(add/change/remove/edit)\n";
-        std::getline(std::cin, choice);
-            switch(ADD)
+            std::cout << "choose an action(add/change/remove/edit)\n";
+            std::getline(std::cin, choice);
+            auto it = choices.find(choice);
+            if(it == choices.end()) {
+                std::cout << "exit\n";
+                return;
+            }
+            switch(it->second)
             {
                 case(ADD):
-                    void addItem();
+                    addItem();
                     break;
                 case(CHANGE):
-                    void changeItemCount();
+                    changeItemCount();
+                    break;
+                case(REMOVE):
+                    removeItem();
+                    break;
+                case(EDIT):
+                    editItem();
                     break;
                 default:
+                    std::cout << "default case\n";
                     return;
             }
         }
     }
     
     private:
-    ordered_json j = ordered_json::parse(inputFile); // not error prone right?
-    std::string filename = "wordCounter.json"; // looks ok...
-    std::ifstream inputFile(std::string filename); // ...?
+    const std::string filename = "shopping.json"; // looks ok...
+    std::ifstream inputFile; // cannot init here
+    ordered_json j;
     std::string choice;
-    enum choices {ADD, CHANGE, REMOVE, EDIT};
+    enum C {ADD, CHANGE, REMOVE, EDIT};
+    std::unordered_map<std::string, C> const choices = 
+    { {"add", C::ADD}, {"change", C::CHANGE}, {"remove", C::REMOVE}, {"edit", C::EDIT} };
 };
 
 int main() {
     // messagesDates();
     // wordCounter();
+    Shopper shopper;
+    shopper.run();
 }
