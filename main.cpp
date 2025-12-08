@@ -87,7 +87,7 @@ class Shopper {
         std::cout << "addItem\n";
     }
     void changeItemCount() {
-        std::cout << "changeItem\n";
+        std::cout << "changeItemCount\n";
     }
     void removeItem() {
         std::cout << "removeItem\n";
@@ -96,14 +96,13 @@ class Shopper {
         std::cout << "editItem\n";
     }
     void run() {
-        // inputFile.open(filename);
-        // j = ordered_json::parse(inputFile);
+        parseFile();
         while(true) {
             std::cout << "choose an action(add/change/remove/edit)\n";
-            std::getline(std::cin, choice);
+            std::getline(std::cin, choice); // how to check for possible buffer mistakes
             auto it = choices.find(choice);
             if(it == choices.end()) {
-                std::cout << "exit\n";
+                std::cout << "exit\n"; //any other choice (or a mistake) leads here
                 return;
             }
             switch(it->second)
@@ -121,7 +120,7 @@ class Shopper {
                     editItem();
                     break;
                 default:
-                    std::cout << "default case\n";
+                    std::cout << "default case\n"; //probably unreachable
                     return;
             }
         }
@@ -135,11 +134,31 @@ class Shopper {
     enum C {ADD, CHANGE, REMOVE, EDIT};
     std::unordered_map<std::string, C> const choices = 
     { {"add", C::ADD}, {"change", C::CHANGE}, {"remove", C::REMOVE}, {"edit", C::EDIT} };
+    
+    void parseFile() {
+        inputFile.open(filename);
+        if(!inputFile) {
+            std::cout << "file not opened\n";
+            return;
+        }
+        if(inputFile.peek() != std::ifstream::traits_type::eof()) {
+            j = ordered_json::parse(inputFile);
+        }
+    }
 };
 
 int main() {
     // messagesDates();
     // wordCounter();
-    Shopper shopper;
-    shopper.run();
+    // Shopper shopper;
+    // shopper.run(); //need static
+    std::ifstream inputF("shopping.json");
+    ordered_json j = ordered_json::parse(inputF);
+    j[2]["item"] = "avocado";
+    j[2]["count"] = 1;
+    for(auto it : j) {
+        if(it["item"] == "avocado") {
+            std::cout << "item exists\n";
+        }
+    }
 }
