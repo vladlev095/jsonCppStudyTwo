@@ -84,16 +84,27 @@ void wordCounter() {
 class Shopper {
     public:
     void addItem() {
-        std::cout << "addItem\n";
+        std::cout << "write item name to add:\n";
+        std::getline(std::cin, itemName);
+        for(auto it : j) {
+            if(it["item"] == itemName) {
+                std::cout << "item already exists\n"; //add count?
+                return;
+            }
+        }
+        // j.push_back(itemName);
     }
     void changeItemCount() {
-        std::cout << "changeItemCount\n";
+        std::cout << "write item name to change item count:\n";
+        std::getline(std::cin, itemName);
     }
     void removeItem() {
-        std::cout << "removeItem\n";
+        std::cout << "enter item name to remove:\n";
+        std::getline(std::cin, itemName);
     }
     void editItem() {
-        std::cout << "editItem\n";
+        std::cout << "enter item name to edit:\n";
+        std::getline(std::cin, itemName);
     }
     void run() {
         parseFile();
@@ -131,11 +142,12 @@ class Shopper {
     std::ifstream inputFile; // cannot init here
     ordered_json j;
     std::string choice;
+    std::string itemName;
     enum C {ADD, CHANGE, REMOVE, EDIT};
     std::unordered_map<std::string, C> const choices = 
     { {"add", C::ADD}, {"change", C::CHANGE}, {"remove", C::REMOVE}, {"edit", C::EDIT} };
     
-    void parseFile() {
+    void parseFile() { //constructor (but how about static func?)
         inputFile.open(filename);
         if(!inputFile) {
             std::cout << "file not opened\n";
@@ -154,11 +166,10 @@ int main() {
     // shopper.run(); //need static
     std::ifstream inputF("shopping.json");
     ordered_json j = ordered_json::parse(inputF);
-    j[2]["item"] = "avocado";
-    j[2]["count"] = 1;
     for(auto it : j) {
         if(it["item"] == "avocado") {
             std::cout << "item exists\n";
         }
-    }
+    } // how to add
+    std::cout << j.dump(4) << "\n";
 }
