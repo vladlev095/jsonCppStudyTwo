@@ -82,17 +82,29 @@ void wordCounter() {
 
 // Пользователь может добавлять товар, указывать количество товара, удалять или изменять запись.
 class Shopper {
-    public:
-    void addItem() {
-        std::cout << "write item name to add:\n";
+public:
+    void getItemName() {
+        std::cout << "enter item name:\n";
         std::getline(std::cin, itemName);
+    }
+    void writeToFile() {
+        outputFile.open(filename);
+        outputFile << j.dump(4); // a bit different output
+        outputFile.close();
+    }
+    void addItem() {
+        std::cout << "let's add a new item.\n";
+        getItemName();
         for(auto it : j) {
-            if(it["item"] == itemName) {
-                std::cout << "item already exists\n"; //add count?
+            if(j["item"].contains(itemName)) { // ?
+                std::cout << "item already exists. added one more\n";
+                j["count"] = j["count"].get<int>() + 1;
+                writeToFile();
                 return;
             }
         }
-        // j.push_back(itemName);
+        j.push_back({{"item", itemName}, {"count", 1}});
+        writeToFile();
     }
     void changeItemCount() {
         std::cout << "write item name to change item count:\n";
@@ -137,9 +149,10 @@ class Shopper {
         }
     }
     
-    private:
+private:
     const std::string filename = "shopping.json"; // looks ok...
     std::ifstream inputFile; // cannot init here
+    std::ofstream outputFile;
     ordered_json j;
     std::string choice;
     std::string itemName;
@@ -162,14 +175,17 @@ class Shopper {
 int main() {
     // messagesDates();
     // wordCounter();
-    // Shopper shopper;
-    // shopper.run(); //need static
-    std::ifstream inputF("shopping.json");
-    ordered_json j = ordered_json::parse(inputF);
-    for(auto it : j) {
-        if(it["item"] == "avocado") {
-            std::cout << "item exists\n";
-        }
-    } // how to add
-    std::cout << j.dump(4) << "\n";
+    Shopper shopper;
+    shopper.run(); //need static
+    // std::ifstream inputF("shopping.json");
+    // ordered_json j = ordered_json::parse(inputF);
+    // j.push_back({{"item", "avocado"}, {"count", 1}});
+    // auto foundEl = j.begin();
+    // for(auto it = j.begin(); it != j.end(); it++) {
+    //     if(it->operator[]("item") == "avocado") {
+    //         std::cout << "item exists\n";
+    //         foundEl = it;
+    //     }
+    // }
+    // std::cout << foundEl->dump(4) << "\n";
 }
