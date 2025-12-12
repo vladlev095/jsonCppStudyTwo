@@ -96,9 +96,9 @@ public:
         std::cout << "let's add a new item.\n";
         getItemName();
         for(auto it : j) {
-            if(j["item"].contains(itemName)) { // ?
+            if(it.contains("item")) {
                 std::cout << "item already exists. added one more\n";
-                j["count"] = j["count"].get<int>() + 1;
+                it["count"] = it["count"].get<int>() + 1;
                 writeToFile();
                 return;
             }
