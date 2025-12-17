@@ -1,4 +1,14 @@
 [
-    {"item": "milk", "count": 2},
-    {"item": "bread", "count": 1}
+    {
+        "item": "milk",
+        "count": 9
+    },
+    {
+        "item": "bread",
+        "count": 1
+    },
+    {
+        "item": "honey",
+        "count": 2
+    }
 ]
