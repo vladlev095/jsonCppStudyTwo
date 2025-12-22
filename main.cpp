@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include <map>
 #include <string>
 #include <fstream>
@@ -7,8 +8,8 @@
 #include <iomanip>
 #include <stdio.h>
 #include <unordered_map>
-
 #include <nlohmann/json.hpp>
+
 using json = nlohmann::json;
 using ordered_json = nlohmann::ordered_json;
 
@@ -80,18 +81,37 @@ void wordCounter() {
     }
 }
 
+class Test {
+public:
+    const int x = 2;
+    int y = 3;
+    void print() {
+        std::cout << "x = " << x << " y = " << y << "\n";
+    }
+};
+
+void parseFile(std::string filename, ordered_json& j) { //ref to a class obj?
+    std::ifstream inputFile;    
+    inputFile.open(filename); //Shopper:: or shopper. ?
+        if(!inputFile) {
+            std::cout << "file not opened\n";
+            return;
+        }
+        if(inputFile.peek() != std::ifstream::traits_type::eof()) {
+            j = ordered_json::parse(inputFile);
+        }
+}
+
+void writeToFile(std::string filename, ordered_json& j) {
+    std::ofstream outputFile;
+    outputFile.open(filename);
+    outputFile << j.dump(4);
+    outputFile.close();
+}
+
 // Пользователь может добавлять товар, указывать количество товара, удалять или изменять запись.
 class Shopper {
 public:
-    void getItemName() { //private?
-        std::cout << "enter item name:\n";
-        std::getline(std::cin, itemName);
-    }
-    void writeToFile() { //private?
-        outputFile.open(filename);
-        outputFile << j.dump(4); // a bit different output
-        outputFile.close();
-    }
     void addItem() {
         std::cout << "let's add a new item.\n";
         getItemName();
@@ -109,7 +129,36 @@ public:
         getItemName();
         for(auto &it : j) {
             if(it["item"] == itemName) {
-                std::cout << "how many pieces would you like to buy?\n";
+                std::cout << "how many pieces would you like to buy?\nenter a number: ";
+                std::cin >> count; //what if a char or smth else
+                it["count"] = count;
+                std::cin.clear(); // useless?
+                std::cin.ignore();
+                return;
+            }
+        }
+        addNotFound();
+    }
+    void removeItem() {
+        std::cout << "let's remove an item.\n";
+        getItemName();
+        for(auto it = j.begin(); it != j.end(); ++it) {
+            if(it->operator[]("item") == itemName) {
+                j.erase(it);
+                return;
+            }
+        }
+        std::cout << "item not found.\n";
+    }
+    void editItem() {
+        std::cout << "let's edit an item.\n";
+        getItemName();
+        for(auto &it : j) {
+            if(it["item"] == itemName) {
+                std::cout << "enter new name: ";
+                std::getline(std::cin, itemName);
+                it["item"] = itemName;
+                std::cout << "enter the amount: ";
                 std::cin >> count;
                 it["count"] = count;
                 std::cin.clear();
@@ -117,34 +166,16 @@ public:
                 return;
             }
         }
-        std::cout << "item not found. would you like to add?\n";
-        std::cin.get(yesOrNo);
-        if(yesOrNo == 'y') {
-            j.push_back({{"item", itemName}, {"count", 1}});
-        }
-        std::cin.clear();
-        std::cin.ignore();
+        addNotFound();
     }
-    void removeItem() {
-        std::cout << "let's remove an item\n";
-        getItemName();
-        auto it = j.begin();
-        for(int i = 0; i < j.size(); i++) {
-            if(it->operator[]("item") == itemName) { //still don't get it
-                j.erase(i);
-                return;
-            }
-        }
-        std::cout << "item not found\n";
-    }
-    void editItem() {
-        std::cout << "let's edit an item\n";
-        getItemName();
+    void print() {
+        parseFile(filename, j);
+        std::cout << j.dump(0) << "\n";
     }
     void run() {
-        parseFile();
+        parseFile(filename, j);
         while(true) {
-            std::cout << "choose an action(add/change/remove/edit)\n";
+            std::cout << "choose an action(add/change/remove/edit): ";
             std::getline(std::cin, choice);
             auto it = choices.find(choice);
             if(it == choices.end()) {
@@ -155,19 +186,19 @@ public:
             {
                 case(ADD):
                     addItem();
-                    writeToFile();
+                    writeToFile(filename, j);
                     break;
                 case(CHANGE):
                     changeItemCount();
-                    writeToFile();
+                    writeToFile(filename, j);
                     break;
                 case(REMOVE):
                     removeItem();
-                    writeToFile();
+                    writeToFile(filename, j);
                     break;
                 case(EDIT):
                     editItem();
-                    // writeToFile();
+                    writeToFile(filename, j);
                     break;
                 default:
                     std::cout << "default case\n"; //probably unreachable
@@ -177,9 +208,7 @@ public:
     }
     
 private:
-    const std::string filename = "shopping.json"; // looks ok...
-    std::ifstream inputFile; // cannot init here
-    std::ofstream outputFile;
+    const std::string filename = "shopping.json";
     ordered_json j;
     std::string choice;
     std::string itemName;
@@ -188,16 +217,19 @@ private:
     enum C {ADD, CHANGE, REMOVE, EDIT};
     std::unordered_map<std::string, C> const choices = 
     { {"add", C::ADD}, {"change", C::CHANGE}, {"remove", C::REMOVE}, {"edit", C::EDIT} };
-    
-    void parseFile() { //constructor?
-        inputFile.open(filename);
-        if(!inputFile) {
-            std::cout << "file not opened\n";
-            return;
+
+    void getItemName() {
+        std::cout << "enter item name: ";
+        std::getline(std::cin, itemName);
+    }
+    void addNotFound() {
+        std::cout << "item not found.\nwould you like to add? (y/n): ";
+        std::cin.get(yesOrNo);
+        if(yesOrNo == 'y') {
+            j.push_back({{"item", itemName}, {"count", 1}});
         }
-        if(inputFile.peek() != std::ifstream::traits_type::eof()) {
-            j = ordered_json::parse(inputFile);
-        }
+        std::cin.clear();
+        std::cin.ignore();
     }
 };
 
@@ -206,17 +238,17 @@ int main() {
     // wordCounter();
 
     Shopper shopper;
-    shopper.run(); //how to make it static
+    shopper.run();
 
-    // std::ifstream inputF("shopping.json");
-    // ordered_json j = ordered_json::parse(inputF);
-    // j.push_back({{"item", "avocado"}, {"count", 1}});
-    // auto foundEl = j.begin();
-    // for(auto it = j.begin(); it != j.end(); it++) {
-    //     if(it->operator[]("item") == "avocado") {
-    //         std::cout << "item exists\n";
-    //         foundEl = it;
-    //     }
+    // std::vector<Shopper> carts;
+    // carts.resize(30);
+    // for(Shopper &sh : carts) {
+    //     sh.print();
     // }
-    // std::cout << foundEl->dump(4) << "\n";
+
+    // std::vector<Test> tests;
+    // tests.resize(300);
+    // for(Test test : tests) {
+    //     test.print();
+    // }
 }

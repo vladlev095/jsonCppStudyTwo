@@ -4,11 +4,15 @@
         "count": 9
     },
     {
-        "item": "bread",
-        "count": 1
+        "item": "honey",
+        "count": 2
     },
     {
-        "item": "honey",
+        "item": "cookies",
+        "count": 3
+    },
+    {
+        "item": "yoghurt",
         "count": 2
     }
 ]
