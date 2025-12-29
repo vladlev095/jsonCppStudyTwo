@@ -7,6 +7,8 @@
 #include <ctime>
 #include <iomanip>
 #include <stdio.h>
+#include <cstdlib>
+#include <random>
 #include <unordered_map>
 #include <nlohmann/json.hpp>
 
@@ -23,7 +25,7 @@ void messagesDates() {
     char timeDelimiter = ':';
     std::string dateTime;
     std::stringstream dateTimeFormat;
-    std::string message; //empty?
+    std::string message;
     std::ofstream messagesFile;
     
     while(true) {
@@ -91,25 +93,22 @@ public:
 };
 
 void parseFile(std::string filename, ordered_json& j) { //ref to a class obj?
-    std::ifstream inputFile;    
-    inputFile.open(filename); //Shopper:: or shopper. ?
-        if(!inputFile) {
-            std::cout << "file not opened\n";
-            return;
-        }
-        if(inputFile.peek() != std::ifstream::traits_type::eof()) {
-            j = ordered_json::parse(inputFile);
-        }
+    std::ifstream inputFile(filename); //Shopper:: or shopper. ?
+    if(!inputFile) {
+        std::cout << "file not opened\n";
+        return;
+    }
+    if(inputFile.peek() != std::ifstream::traits_type::eof()) {
+        j = ordered_json::parse(inputFile);
+    }
 }
 
 void writeToFile(std::string filename, ordered_json& j) {
-    std::ofstream outputFile;
-    outputFile.open(filename);
+    std::cout << "here\n";
+    std::ofstream outputFile(filename);
     outputFile << j.dump(4);
-    outputFile.close();
 }
 
-// Пользователь может добавлять товар, указывать количество товара, удалять или изменять запись.
 class Shopper {
 public:
     void addItem() {
@@ -123,6 +122,7 @@ public:
             }
         }
         j.push_back({{"item", itemName}, {"count", 1}});
+        std::cout << j.dump(4) << "\n";
     }
     void changeItemCount() {
         std::cout << "let's specify the amount.\n";
@@ -186,24 +186,21 @@ public:
             {
                 case(ADD):
                     addItem();
-                    writeToFile(filename, j);
                     break;
                 case(CHANGE):
                     changeItemCount();
-                    writeToFile(filename, j);
                     break;
                 case(REMOVE):
                     removeItem();
-                    writeToFile(filename, j);
                     break;
                 case(EDIT):
                     editItem();
-                    writeToFile(filename, j);
                     break;
                 default:
                     std::cout << "default case\n"; //probably unreachable
                     return;
             }
+            writeToFile(filename, j);
         }
     }
     
@@ -233,22 +230,27 @@ private:
     }
 };
 
+//Каждые N секунд программа опрашивает пользователя (или генерирует случайно) 
+//температуру и сохраняет её в JSON-массив, учитывая дату и время замера.
+//[ {"temperature": 41, "date": 12/30/2025, "time": 12:40}, ... ]
+void temperatureSensor() {
+    ordered_json j;
+    srand (static_cast <unsigned> (time(0))); //?
+    float temperature;
+    int i = 0;
+    while(i != 10) {
+        temperature = 40 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(42-40)));
+        printf("%.1f\n", temperature);
+        ++i;
+    }
+}
+
 int main() {
     // messagesDates();
     // wordCounter();
 
-    Shopper shopper;
-    shopper.run();
+    // Shopper shopper;
+    // shopper.run();
 
-    // std::vector<Shopper> carts;
-    // carts.resize(30);
-    // for(Shopper &sh : carts) {
-    //     sh.print();
-    // }
-
-    // std::vector<Test> tests;
-    // tests.resize(300);
-    // for(Test test : tests) {
-    //     test.print();
-    // }
+    temperatureSensor();
 }

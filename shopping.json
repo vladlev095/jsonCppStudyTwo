@@ -14,5 +14,9 @@
     {
         "item": "yoghurt",
         "count": 2
+    },
+    {
+        "item": "bread",
+        "count": 1
     }
 ]
