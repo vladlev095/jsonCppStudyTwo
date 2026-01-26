@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <ctime>
+#include <chrono>
 #include <iomanip>
 #include <stdio.h>
 #include <cstdlib>
@@ -14,6 +15,42 @@
 
 using json = nlohmann::json;
 using ordered_json = nlohmann::ordered_json;
+
+class Stopwatch
+{
+private:
+    std::chrono::steady_clock::time_point start;
+public:
+    Stopwatch() : start(std::chrono::steady_clock::now()) {}
+    ~Stopwatch() {
+        auto end = std::chrono::steady_clock::now();
+        auto secs = std::chrono::duration_cast<std::chrono::seconds>(end - start);
+        std::cout << "elapsed: " << secs.count() << " seconds\n";
+    }
+};
+
+class Timer
+{
+public:
+    void setTimer(int seconds) {
+        endTime = Clock::now();
+        isRunning = true;
+    }
+    double elapsedMillSec() {
+        if(!isRunning) {
+            return 0.0;
+        }
+        auto endTime = Clock::now();
+    }
+    void stop() {
+        isRunning = false;
+    }
+private:
+    using Clock = std::chrono::high_resolution_clock;
+    using TimePoint = std::chrono::time_point<Clock>;
+    TimePoint endTime;
+    bool isRunning = false;
+};
 
 void messagesDates() {
     json j;
@@ -93,7 +130,7 @@ public:
 };
 
 void parseFile(std::string filename, ordered_json& j) { //ref to a class obj?
-    std::ifstream inputFile(filename); //Shopper:: or shopper. ?
+    std::ifstream inputFile(filename);
     if(!inputFile) {
         std::cout << "file not opened\n";
         return;
@@ -232,25 +269,41 @@ private:
 
 //Каждые N секунд программа опрашивает пользователя (или генерирует случайно) 
 //температуру и сохраняет её в JSON-массив, учитывая дату и время замера.
-//[ {"temperature": 41, "date": 12/30/2025, "time": 12:40}, ... ]
+//[ {"temperature": 41.2, "date": 12/30/2025, "time": 12:40}, ... ]
 void temperatureSensor() {
     ordered_json j;
-    srand (static_cast <unsigned> (time(0))); //?
+    srand (static_cast <unsigned> (time(0)));
     float temperature;
     int i = 0;
-    while(i != 10) {
-        temperature = 40 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(42-40)));
+    while(i != 1000) {
+        temperature = 40 + static_cast <float> (rand()) / ( static_cast <float> (RAND_MAX/(42-40)));
         printf("%.1f\n", temperature);
         ++i;
     }
+}
+
+void setStopwatch() {
+
 }
 
 int main() {
     // messagesDates();
     // wordCounter();
 
+    // Stopwatch Stopwatch;
     // Shopper shopper;
     // shopper.run();
 
-    temperatureSensor();
+    // temperatureSensor();
+
+    ordered_json j = ordered_json::array();
+    float a = 41.2;
+    float b = 42.0;
+    std::string date = "12/30/2025";
+    std::string date2 = "12/30/2025";
+    std::string time = "12:40";
+    std::string time2 = "12:45";
+    j[0] = {{"temperature", a}, {"date", date}, {"time", time}};
+    j[1] = {{"temperature", b}, {"date", date2}, {"time", time2}};
+    std::cout << j.dump(4) << "\n";
 }
