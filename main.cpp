@@ -278,9 +278,6 @@ private:
     }
 };
 
-//Каждые N секунд программа опрашивает пользователя (или генерирует случайно) 
-//температуру и сохраняет её в JSON-массив, учитывая дату и время замера.
-//[ {"temperature": 41.2, "date": 12/30/2025, "time": 12:40}, ... ]
 void temperatureSensor() {
     ordered_json j = ordered_json::array();
     std::stringstream ss;
@@ -289,9 +286,8 @@ void temperatureSensor() {
     std::string tempStr;
     float temperature;
     int count {0};
-    srand (static_cast <unsigned> (time(0))); // within the loop?
+    srand (static_cast <unsigned> (time(0)));
     while(true) {
-        ordered_json entry;
         Stopwatch stopwatch;
         stopwatch.countFive();
         temperature = 35 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/(41-35)));
@@ -302,6 +298,7 @@ void temperatureSensor() {
         ss << std::fixed << std::setprecision(1) << temperature << " " << tm->tm_mday << "/" << tm->tm_mon + 1 << "/" << 1900 + tm->tm_year << 
         " " << tm->tm_hour << ":" << tm->tm_min;
         ss >> tempStr >> dateStr >> timeStr;
+        ordered_json entry;
         entry["temperature"] = tempStr;
         entry["date"] = dateStr;
         entry["time"] = timeStr;
@@ -321,23 +318,4 @@ int main() {
     // shopper.run();
 
     temperatureSensor();
-
-    // ordered_json j = ordered_json::array();
-    // float a = 41.2;
-    // float b = 42.0;
-    // std::string date = "12/30/2025";
-    // std::string date2 = "12/30/2025";
-    // std::string time = "12:40";
-    // std::string time2 = "12:45";
-    // j[0] = {{"temperature", a}, {"date", date}, {"time", time}};
-    // j[1] = {{"temperature", b}, {"date", date2}, {"time", time2}};
-    // std::cout << j.dump(4) << "\n";
-
-    // auto now = std::chrono::system_clock::now();
-    // time_t t = std::chrono::system_clock::to_time_t(now);
-    // std::cout << "sysclock: " << t << "\n";
-    // auto start = std::chrono::steady_clock::now();
-    // auto stop = std::chrono::steady_clock::now();
-    // auto msec = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    // std::cout << "stdclock: " << msec.count() << "\n";
 }
