@@ -1,3 +1,4 @@
+#include <date.h>
 #include <iostream>
 #include <vector>
 #include <map>
@@ -12,25 +13,35 @@
 #include <random>
 #include <unordered_map>
 #include <nlohmann/json.hpp>
+#include <stb_image.h>
 
 using json = nlohmann::json;
 using ordered_json = nlohmann::ordered_json;
+using namespace date;
 
-class Stopwatch
-{
-private:
-    std::chrono::steady_clock::time_point start;
+class Stopwatch {
 public:
     Stopwatch() : start(std::chrono::steady_clock::now()) {}
     ~Stopwatch() {
         auto end = std::chrono::steady_clock::now();
         auto secs = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-        std::cout << "elapsed: " << secs.count() << " seconds\n";
+        // std::cout << "elapsed: " << secs.count() << " seconds\n";
     }
+    bool countFive() {
+        start = std::chrono::steady_clock::now();
+        auto end = std::chrono::steady_clock::now();
+        auto secs = std::chrono::duration_cast<std::chrono::seconds>(end - start);
+        while(secs.count() < 3) {
+            end = std::chrono::steady_clock::now();
+            secs = std::chrono::duration_cast<std::chrono::seconds>(end - start);
+        }
+        return true;
+    }
+private:
+    std::chrono::steady_clock::time_point start;
 };
 
-class Timer
-{
+class Timer {
 public:
     void setTimer(int seconds) {
         endTime = Clock::now();
@@ -271,39 +282,62 @@ private:
 //температуру и сохраняет её в JSON-массив, учитывая дату и время замера.
 //[ {"temperature": 41.2, "date": 12/30/2025, "time": 12:40}, ... ]
 void temperatureSensor() {
-    ordered_json j;
-    srand (static_cast <unsigned> (time(0)));
+    ordered_json j = ordered_json::array();
+    std::stringstream ss;
+    std::string dateStr;
+    std::string timeStr;
+    std::string tempStr;
     float temperature;
-    int i = 0;
-    while(i != 1000) {
-        temperature = 40 + static_cast <float> (rand()) / ( static_cast <float> (RAND_MAX/(42-40)));
-        printf("%.1f\n", temperature);
-        ++i;
+    int count {0};
+    srand (static_cast <unsigned> (time(0))); // within the loop?
+    while(true) {
+        ordered_json entry;
+        Stopwatch stopwatch;
+        stopwatch.countFive();
+        temperature = 35 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/(41-35)));
+        const auto now = std::chrono::system_clock::now();
+        const auto today = date::floor<days>(now);
+        const std::time_t c_t = std::chrono::system_clock::to_time_t(now);
+        std::tm* tm = std::localtime(&c_t);
+        ss << std::fixed << std::setprecision(1) << temperature << " " << tm->tm_mday << "/" << tm->tm_mon + 1 << "/" << 1900 + tm->tm_year << 
+        " " << tm->tm_hour << ":" << tm->tm_min;
+        ss >> tempStr >> dateStr >> timeStr;
+        entry["temperature"] = tempStr;
+        entry["date"] = dateStr;
+        entry["time"] = timeStr;
+        j.push_back(entry);
+        std::cout << j.dump(4) << "\n";
+        ss.str("");
+        ss.clear();
+        count++;
     }
-}
-
-void setStopwatch() {
-
 }
 
 int main() {
     // messagesDates();
     // wordCounter();
 
-    // Stopwatch Stopwatch;
     // Shopper shopper;
     // shopper.run();
 
-    // temperatureSensor();
+    temperatureSensor();
 
-    ordered_json j = ordered_json::array();
-    float a = 41.2;
-    float b = 42.0;
-    std::string date = "12/30/2025";
-    std::string date2 = "12/30/2025";
-    std::string time = "12:40";
-    std::string time2 = "12:45";
-    j[0] = {{"temperature", a}, {"date", date}, {"time", time}};
-    j[1] = {{"temperature", b}, {"date", date2}, {"time", time2}};
-    std::cout << j.dump(4) << "\n";
+    // ordered_json j = ordered_json::array();
+    // float a = 41.2;
+    // float b = 42.0;
+    // std::string date = "12/30/2025";
+    // std::string date2 = "12/30/2025";
+    // std::string time = "12:40";
+    // std::string time2 = "12:45";
+    // j[0] = {{"temperature", a}, {"date", date}, {"time", time}};
+    // j[1] = {{"temperature", b}, {"date", date2}, {"time", time2}};
+    // std::cout << j.dump(4) << "\n";
+
+    // auto now = std::chrono::system_clock::now();
+    // time_t t = std::chrono::system_clock::to_time_t(now);
+    // std::cout << "sysclock: " << t << "\n";
+    // auto start = std::chrono::steady_clock::now();
+    // auto stop = std::chrono::steady_clock::now();
+    // auto msec = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    // std::cout << "stdclock: " << msec.count() << "\n";
 }
